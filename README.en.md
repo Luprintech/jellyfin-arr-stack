@@ -16,6 +16,24 @@
 
 ---
 
+## 🤔 What is this for?
+
+Imagine having **your own Netflix**, but at home, with no subscriptions and with everything you want to watch.
+
+That's what this stack is: a set of apps that work together so that all you have to do is **choose what you want to watch**. They take care of the rest:
+
+- 🔎 They **search** for whatever you ask for.
+- ⬇️ They **download it** and let you know.
+- 🗂️ They **organise it** into folders with its poster and synopsis.
+- 📺 They **put it in Jellyfin**, ready to watch on your TV, phone or computer, at home or on the go.
+- 🔁 They **keep an eye on it**: when a new episode of your show comes out, it just shows up, without you lifting a finger.
+
+**An example:** from your phone, you request *"the new season of my favourite show"* in Seerr. Sonarr finds it, qBittorrent downloads it and, a little later, it's in Jellyfin with its poster. And every week, when a new episode comes out, it will appear on its own.
+
+**Is it for me?** If you have a NAS or a computer that's always on and you fancy building your own media centre, yes. You don't need to be an expert: this guide goes step by step.
+
+---
+
 ## 📚 Contents
 
 1. [What's included](#-whats-included)

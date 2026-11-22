@@ -16,6 +16,24 @@
 
 ---
 
+## 🤔 Wofür ist das gut?
+
+Stell dir vor, du hättest **dein eigenes Netflix** – aber bei dir zu Hause, ohne Abo und mit allem, was du sehen willst.
+
+Genau das ist dieser Stack: eine Sammlung von Apps, die zusammenarbeiten, sodass du nur noch **aussuchen musst, was du sehen willst**. Um den Rest kümmern sie sich:
+
+- 🔎 Sie **suchen**, was du dir wünschst.
+- ⬇️ Sie **laden es herunter** und sagen dir Bescheid.
+- 🗂️ Sie **sortieren es** in Ordner, mit Cover und Inhaltsangabe.
+- 📺 Sie **stellen es in Jellyfin bereit** – zum Anschauen auf dem Fernseher, dem Handy oder dem Computer, zu Hause oder unterwegs.
+- 🔁 Sie **behalten alles im Blick**: Erscheint eine neue Folge deiner Serie, taucht sie von selbst auf, ohne dass du etwas tun musst.
+
+**Ein Beispiel:** Auf dem Handy wünschst du dir in Seerr *„die neue Staffel meiner Lieblingsserie“*. Sonarr findet sie, qBittorrent lädt sie herunter, und kurz darauf ist sie samt Cover in Jellyfin. Und jede Woche, wenn eine neue Folge erscheint, taucht sie von allein auf.
+
+**Ist das was für mich?** Wenn du ein NAS oder einen Rechner hast, der immer läuft, und Lust hast, dir dein eigenes Mediacenter einzurichten: ja. Du musst kein Profi sein – diese Anleitung geht Schritt für Schritt vor.
+
+---
+
 ## 📚 Inhaltsverzeichnis
 
 1. [Was dabei ist](#-was-dabei-ist)

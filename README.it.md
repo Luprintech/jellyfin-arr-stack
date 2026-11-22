@@ -16,6 +16,24 @@
 
 ---
 
+## 🤔 A cosa serve?
+
+Immagina di avere **il tuo Netflix personale**, ma a casa tua, senza abbonamenti e con tutto quello che vuoi vedere.
+
+Ecco cos'è questo stack: un insieme di app che lavorano insieme, così tu devi solo **scegliere cosa guardare**. Al resto pensano loro:
+
+- 🔎 **Cercano** quello che chiedi.
+- ⬇️ **Lo scaricano** e ti avvisano.
+- 🗂️ **Lo ordinano** in cartelle con locandina e trama.
+- 📺 **Lo mettono su Jellyfin**, pronto da guardare sulla TV, sul telefono o sul computer, a casa o fuori.
+- 🔁 **Lo tengono d'occhio**: quando esce un nuovo episodio della tua serie, compare da solo, senza che tu faccia nulla.
+
+**Un esempio:** dal telefono chiedi *"la nuova stagione della mia serie preferita"* su Seerr. Sonarr la trova, qBittorrent la scarica e, poco dopo, è già su Jellyfin con la sua locandina. E ogni settimana, quando esce un nuovo episodio, comparirà da solo.
+
+**Fa per me?** Se hai un NAS o un computer sempre acceso e ti va di creare il tuo centro multimediale, sì. Non serve essere esperti: questa guida va passo dopo passo.
+
+---
+
 ## 📚 Indice
 
 1. [Cosa include](#-cosa-include)
