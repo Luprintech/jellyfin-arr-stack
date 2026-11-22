@@ -227,6 +227,17 @@ Prowlarr ist das **Adressbuch der Indexer**: Du trägst sie nur einmal hier ein,
 2. Filtere nach **Privacy: Public**, **Protocol: torrent** und der **Sprache**, die dich interessiert.
 3. Wähle einen aus, prüfe die Kategorien und klicke auf **Test** und dann auf **Save**.
 
+**Woher weiß ich, welche Indexer es gibt?** Das Fenster *Add Indexer* ist der **komplette Katalog** von Prowlarr mit Hunderten von Seiten. So findest du, was du suchst:
+- **Suchfeld** (oben): Gib den Namen ein, wenn du schon weißt, welchen du willst.
+- **Filter:**
+  - **Protocol**: *torrent* oder *usenet*.
+  - **Language**: die Sprache der Inhalte, zum Beispiel *de-DE*.
+  - **Privacy**: *Public*, *Semi-Private* oder *Private*.
+  - **Categories**: *Movies*, *TV*, *Books*, *Audio* …
+- Jede Zeile zeigt Sprache, öffentlich oder privat und das Protokoll. Klickst du auf einen, siehst du vor dem Hinzufügen seine Beschreibung und Website.
+
+Für Hörbücher in deiner Sprache filterst du zum Beispiel nach **Categories: Audio**, deiner **Language** und **Privacy: Public**.
+
 **Beispiel: Internet Archive (archive.org).** Das ist eine gemeinnützige digitale Bibliothek mit Tausenden Büchern, Hörbüchern, Klassikerfilmen und Musik, die **gemeinfrei oder frei lizenziert** sind. Suche in *Add Indexer* nach *Internet Archive*.
 
 > [!TIP]

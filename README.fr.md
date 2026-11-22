@@ -227,6 +227,17 @@ Les publics n'ont pas besoin de compte.
 2. Filtre par **Privacy : Public**, **Protocol : torrent** et la **langue** qui t'intéresse.
 3. Choisis-en un, vérifie les catégories, puis clique sur **Test** et ensuite sur **Save**.
 
+**Comment savoir quels indexeurs existent ?** La fenêtre *Add Indexer* est le **catalogue complet** de Prowlarr, avec des centaines de sites. Pour trouver ce qui t'intéresse :
+- **Barre de recherche** (en haut) : tape le nom si tu sais déjà lequel tu veux.
+- **Filtres :**
+  - **Protocol** : *torrent* ou *usenet*.
+  - **Language** : la langue du contenu, par exemple *fr-FR*.
+  - **Privacy** : *Public*, *Semi-Private* ou *Private*.
+  - **Categories** : *Movies*, *TV*, *Books*, *Audio*…
+- Chaque ligne indique la langue, s'il est public ou privé, et le protocole. En cliquant dessus, tu vois sa description et son site avant de l'ajouter.
+
+Par exemple, pour des livres audio dans ta langue, filtre par **Categories : Audio**, ta **Language** et **Privacy : Public**.
+
 **Exemple : Internet Archive (archive.org).** C'est une bibliothèque numérique à but non lucratif, avec des milliers de livres, de livres audio, de films classiques et de musique du **domaine public ou sous licence libre**. Cherche-le sous le nom *Internet Archive* dans *Add Indexer*.
 
 > [!TIP]
