@@ -1,0 +1,180 @@
+# Jellyfin + *arr: stack multimedia completo en un solo compose.
+# Todas las rutas, puertos y usuarios salen del archivo .env (ver .env.example).
+#
+#   ${DATA_ROOT}   -> /data   en qBittorrent, Sonarr, Radarr y Chaptarr
+#   ${DATA_ROOT}   -> /media  en Jellyfin
+#
+# Al compartir la misma carpeta /data, las apps pueden usar hardlinks:
+# un archivo descargado y su copia en la biblioteca ocupan el espacio una sola vez.
+
+x-common-env: &common-env
+  PUID: ${PUID}
+  PGID: ${PGID}
+  TZ: ${TZ}
+
+services:
+  # ---------------------------------------------------------------- Jellyfin
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      TZ: ${TZ}
+    user: "${PUID}:${PGID}"
+    volumes:
+      - ${CONFIG_ROOT}/jellyfin/config:/config
+      - ${CONFIG_ROOT}/jellyfin/cache:/cache
+      - ${DATA_ROOT}:/media
+    ports:
+      - ${JELLYFIN_PORT}:8096
+    # Aceleración por hardware (Intel/AMD). Si tu equipo no tiene /dev/dri,
+    # borra estas cuatro líneas.
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "${RENDER_GID}"
+    restart: unless-stopped
+
+  # ------------------------------------------------------------- qBittorrent
+  qbittorrent:
+    # Consejo: cuando funcione, fija aquí la versión exacta (p. ej. :5.1.2)
+    # para que una actualización no te cambie la interfaz por sorpresa.
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      <<: *common-env
+      WEBUI_PORT: ${QBIT_WEBUI_PORT}
+      TORRENTING_PORT: ${QBIT_TORRENT_PORT}
+    volumes:
+      - ${CONFIG_ROOT}/qbittorrent:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - ${QBIT_WEBUI_PORT}:${QBIT_WEBUI_PORT}
+      - ${QBIT_TORRENT_PORT}:${QBIT_TORRENT_PORT}
+      - ${QBIT_TORRENT_PORT}:${QBIT_TORRENT_PORT}/udp
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- Prowlarr
+  # Gestor central de indexadores: los configuras aquí una vez y él los
+  # reparte a Sonarr, Radarr y Chaptarr.
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      <<: *common-env
+    volumes:
+      - ${CONFIG_ROOT}/prowlarr:/config
+    ports:
+      - ${PROWLARR_PORT}:9696
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------ Sonarr
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      <<: *common-env
+    volumes:
+      - ${CONFIG_ROOT}/sonarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - ${SONARR_PORT}:8989
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------ Radarr
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      <<: *common-env
+    volumes:
+      - ${CONFIG_ROOT}/radarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - ${RADARR_PORT}:7878
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------- Seerr
+  # Web de peticiones (sucesor de Jellyseerr). Corre como uid 1000 y necesita
+  # init: true. Antes del primer arranque:
+  #   sudo chown -R 1000:1000 ${CONFIG_ROOT}/seerr
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    init: true
+    environment:
+      TZ: ${TZ}
+      LOG_LEVEL: info
+      PORT: 5055
+    volumes:
+      - ${CONFIG_ROOT}/seerr:/app/config
+    ports:
+      - ${SEERR_PORT}:5055
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1"]
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------ Wizarr
+  # Enlaces de invitación para que tus amigos se creen usuario en Jellyfin.
+  wizarr:
+    image: ghcr.io/wizarrrr/wizarr:latest
+    container_name: wizarr
+    environment:
+      <<: *common-env
+      APP_URL: ${WIZARR_APP_URL}
+    volumes:
+      - ${CONFIG_ROOT}/wizarr/database:/data/database
+    ports:
+      - ${WIZARR_PORT}:5690
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- Chaptarr
+  # Libros y audiolibros (sustituto de Readarr, en beta). Usa Postgres porque
+  # con bibliotecas grandes SQLite se queda corto.
+  chaptarr-db:
+    image: postgres:16
+    container_name: chaptarr-db
+    # Prioridad baja de CPU: el escaneo inicial es muy pesado y así cede
+    # ante Jellyfin y qBittorrent (el valor por defecto es 1024).
+    cpu_shares: 128
+    user: "${PUID}:${PGID}"
+    environment:
+      TZ: ${TZ}
+      POSTGRES_USER: chaptarr
+      POSTGRES_PASSWORD: ${CHAPTARR_DB_PASSWORD}
+      POSTGRES_DB: chaptarr-main
+    volumes:
+      - ${CONFIG_ROOT}/chaptarr-db/data:/var/lib/postgresql/data
+      - ./init/chaptarr-db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chaptarr -d chaptarr-main"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  chaptarr:
+    image: chaptarr/chaptarr:latest
+    container_name: chaptarr
+    cpu_shares: 128
+    depends_on:
+      chaptarr-db:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      Chaptarr__Postgres__Host: chaptarr-db
+      Chaptarr__Postgres__Port: 5432
+      Chaptarr__Postgres__User: chaptarr
+      Chaptarr__Postgres__Password: ${CHAPTARR_DB_PASSWORD}
+      Chaptarr__Postgres__MainDb: chaptarr-main
+      Chaptarr__Postgres__LogDb: chaptarr-log
+      Chaptarr__Postgres__CacheDb: chaptarr-cache
+    volumes:
+      - ${CONFIG_ROOT}/chaptarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - ${CHAPTARR_PORT}:8789
+    restart: unless-stopped

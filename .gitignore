@@ -1,0 +1,6 @@
+# Secretos y datos locales: nunca al repo
+.env
+config/
+*.bak*
+@eaDir/
+.DS_Store
