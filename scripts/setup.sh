@@ -30,6 +30,17 @@ for dir in torrents/series torrents/peliculas torrents/libros torrents/audiolibr
   mkdir -p "${DATA_ROOT}/${dir}"
 done
 
+echo "==> Definiciones propias de Prowlarr"
+mkdir -p "${CONFIG_ROOT}/prowlarr/Definitions/Custom"
+for def in prowlarr/Custom/*.yml; do
+  dest="${CONFIG_ROOT}/prowlarr/Definitions/Custom/$(basename "$def")"
+  if [[ -e "$dest" ]]; then
+    echo "   $(basename "$def") ya existe, no lo toco"
+  else
+    cp "$def" "$dest" && echo "   $(basename "$def") instalada"
+  fi
+done
+
 # Postgres exige que su carpeta de datos sea del usuario con el que corre.
 chown "${PUID}:${PGID}" "${CONFIG_ROOT}/chaptarr-db/data" 2>/dev/null || \
   echo "Aviso: no pude cambiar el dueño de chaptarr-db/data (prueba con sudo)."

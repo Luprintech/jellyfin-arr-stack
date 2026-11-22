@@ -209,10 +209,94 @@ Apri `http://IP-DEL-SERVIDOR:8085`.
 
 Apri `http://IP-DEL-SERVIDOR:9696` e crea il tuo utente.
 
-1. **Indexers → Add Indexer:** aggiungi gli indexer che vuoi usare. Per quelli privati ti serviranno il tuo account o la tua API key. Scegli con giudizio: sei tu il responsabile di ciò che scarichi.
-2. **Settings → Download Clients → + → qBittorrent:**
-   - Host: `qbittorrent` · Port: `8085` · utente e password di qBittorrent.
-3. **Settings → Apps:** qui collegherai Sonarr, Radarr e Chaptarr (nei passi successivi) così riceveranno gli indexer automaticamente.
+Prowlarr è la **rubrica degli indexer**: li aggiungi qui una sola volta e lui li passa a Sonarr, Radarr e Chaptarr. Un indexer è un sito o un tracker dove si cercano i torrent.
+
+> [!IMPORTANT]
+> Questo repo non include indexer già configurati e non ne consiglia nessuno. Decidi tu quali usare e sei responsabile di ciò che scarichi. Rispetta le leggi del tuo paese e le regole di ogni sito.
+
+### 5.1 · Collegare qBittorrent
+
+**Settings → Download Clients → + → qBittorrent:**
+- Host: `qbittorrent` · Port: `8085` · utente e password di qBittorrent.
+
+### 5.2 · Aggiungere indexer pubblici
+
+Quelli pubblici non richiedono un account.
+
+1. **Indexers → Add Indexer.**
+2. Filtra per **Privacy: Public**, **Protocol: torrent** e la **lingua** che ti interessa.
+3. Scegline uno, controlla le categorie e premi **Test** e poi **Save**.
+
+**Esempio: Internet Archive (archive.org).** È una biblioteca digitale senza scopo di lucro, con migliaia di libri, audiolibri, film classici e musica di **pubblico dominio o con licenza libera**. Cercalo come *Internet Archive* in *Add Indexer*.
+
+> [!TIP]
+> Se l'Internet Archive ufficiale ti dà errore 403 quando lo provi, usa la versione **Internet Archive (custom)** inclusa in questo repo (vedi 5.3). È la stessa, ma si presenta come un normale browser e archive.org non la blocca.
+
+### 5.3 · Indexer personalizzati (definizioni *custom*)
+
+Prowlarr permette di aggiungere indexer che non sono inclusi di serie, o di sistemarne uno che non funziona, con un file YAML (formato *Cardigann*).
+
+1. Copia il `.yml` in `CONFIG_ROOT/prowlarr/Definitions/Custom/`.
+2. Riavvia Prowlarr: `docker restart prowlarr`.
+3. In **Add Indexer** comparirà con il nome indicato nel file, di solito con *(custom)* alla fine.
+
+Questo repo include [`prowlarr/Custom/internetarchive-custom.yml`](prowlarr/Custom/internetarchive-custom.yml), e `scripts/setup.sh` lo copia già al suo posto.
+
+> [!NOTE]
+> Prowlarr tiene le definizioni in cache. **Ogni volta che modifichi un `.yml`, riavvia Prowlarr** o continuerà a usare la versione precedente.
+
+### 5.4 · Aggiungere tracker privati
+
+I tracker privati richiedono un account, di solito su invito. In cambio, spesso hanno qualità migliore, più velocità e contenuti meglio organizzati.
+
+1. **Indexers → Add Indexer** → filtra per **Privacy: Private** e cerca il tuo tracker.
+2. Compila quello che chiede. Dipende dal tracker:
+
+   | Cosa chiede | Dove lo trovi |
+   |---|---|
+   | **API key** (indexer che finiscono con *(API)*) | Nel tuo profilo sul tracker, in *Sicurezza*, *API* o *Impostazioni* |
+   | **Utente e password** | Quelli del tuo account |
+   | **Cookie** | Nel browser, con la sessione aperta: *F12 → Application/Storage → Cookies* |
+   | **Passkey / RSS key** | Nel tuo profilo, di solito vicino ai link RSS |
+
+3. Premi **Test** e poi **Save**.
+
+**Rispetta le regole sul ratio** o ti butteranno fuori. Quasi tutti chiedono di condividere ogni torrent per un tempo minimo o fino a raggiungere un ratio:
+- Nella configurazione di ogni indexer in Prowlarr compila **Seed Ratio** e **Seed Time** con il minimo del tuo tracker. Prowlarr li passa a Sonarr, Radarr e Chaptarr.
+- Non eliminare i torrent da qBittorrent prima di aver raggiunto quel minimo.
+- In Sonarr e Radarr lascia disattivato **Remove Completed** nel client di download se il tuo tracker richiede di condividere a lungo.
+
+> [!CAUTION]
+> La tua API key, la tua passkey e i tuoi cookie sono come la tua password. **Non condividerli e non pubblicarli** (né in screenshot, né in issue, né in repo). Se trapelano, rigenerali dal tuo profilo sul tracker.
+
+### 5.5 · Priorità, categorie e profili
+
+- **Priority** (1–50): più è **basso**, maggiore è la preferenza. Metti i tuoi tracker privati con un numero basso (es. `10`) e quelli pubblici più alto (es. `25`–`40`), così vengono usati solo come riserva.
+- **Categorie:** decidono a quale app arriva ogni indexer. *Movies* va a Radarr, *TV* a Sonarr e *Books/Audio* a Chaptarr. Se un indexer non compare in un'app, controlla le sue categorie.
+- **Sync Profile:** con *Standard* l'indexer viene usato per tutto (RSS, ricerca automatica e manuale). Se uno ti dà troppi risultati scadenti, crea in *Settings → Apps → Sync Profiles* un profilo solo per la ricerca manuale.
+- **Tags:** se vuoi che un indexer arrivi a una sola app, mettigli un tag e metti lo stesso tag su quell'app, in *Settings → Apps*.
+
+### 5.6 · Siti con Cloudflare: FlareSolverr (opzionale)
+
+Alcuni siti pubblici hanno una protezione Cloudflare che Prowlarr non riesce a superare da solo, e vedrai errori come *"blocked by CloudFlare Protection"*. Per questo c'è **FlareSolverr**. Aggiungilo al `docker-compose.yml`:
+
+```yaml
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      TZ: ${TZ}
+    restart: unless-stopped
+```
+
+Avvialo con `docker compose up -d` e poi:
+1. **Settings → Indexers → + → FlareSolverr** · Host: `http://flaresolverr:8191` · Tags: `flaresolverr`.
+2. Modifica l'indexer che non funzionava e mettigli il tag `flaresolverr`.
+
+### 5.7 · Provare e collegare le app
+
+- **Search** (menu a sinistra): cerca un titolo per verificare che i tuoi indexer rispondano.
+- **Settings → Apps:** qui collegherai Sonarr, Radarr e Chaptarr nei passi successivi, così riceveranno gli indexer automaticamente.
 
 > [!TIP]
 > Dentro Docker, le app si vedono tra loro **tramite il nome del container** (`sonarr`, `radarr`, `qbittorrent`…). Non usare `localhost` né l'IP del server per collegarle tra loro.

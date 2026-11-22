@@ -209,10 +209,94 @@ Open `http://IP-DEL-SERVIDOR:8085`.
 
 Open `http://IP-DEL-SERVIDOR:9696` and create your user.
 
-1. **Indexers → Add Indexer:** add the indexers you want to use. For private ones you'll need your account or your API key. Choose wisely: you're responsible for what you download.
-2. **Settings → Download Clients → + → qBittorrent:**
-   - Host: `qbittorrent` · Port: `8085` · your qBittorrent username and password.
-3. **Settings → Apps:** this is where you'll connect Sonarr, Radarr and Chaptarr (in the next steps) so they receive the indexers automatically.
+Prowlarr is the **indexer address book**: you add your indexers here once and it hands them over to Sonarr, Radarr and Chaptarr. An indexer is a website or tracker where torrents are searched.
+
+> [!IMPORTANT]
+> This repo ships with no indexers configured and doesn't recommend any. You decide which ones to use and you're responsible for what you download. Follow the laws of your country and the rules of each site.
+
+### 5.1 · Connect qBittorrent
+
+**Settings → Download Clients → + → qBittorrent:**
+- Host: `qbittorrent` · Port: `8085` · your qBittorrent username and password.
+
+### 5.2 · Add public indexers
+
+Public ones don't need an account.
+
+1. **Indexers → Add Indexer.**
+2. Filter by **Privacy: Public**, **Protocol: torrent** and the **language** you're interested in.
+3. Pick one, check its categories, then click **Test** and then **Save**.
+
+**Example: Internet Archive (archive.org).** It's a non-profit digital library with thousands of books, audiobooks, classic films and music that are **public domain or freely licensed**. Search for it as *Internet Archive* in *Add Indexer*.
+
+> [!TIP]
+> If the official Internet Archive gives you a 403 error when you test it, use the **Internet Archive (custom)** version that ships with this repo (see 5.3). It's the same thing, but it identifies itself as a regular browser and archive.org doesn't block it.
+
+### 5.3 · Your own indexers (*custom* definitions)
+
+Prowlarr lets you add indexers that don't come built in, or fix one that fails, using a YAML file (*Cardigann* format).
+
+1. Copy the `.yml` into `CONFIG_ROOT/prowlarr/Definitions/Custom/`.
+2. Restart Prowlarr: `docker restart prowlarr`.
+3. In **Add Indexer** it will show up under the name set in the file, usually with *(custom)* at the end.
+
+This repo includes [`prowlarr/Custom/internetarchive-custom.yml`](prowlarr/Custom/internetarchive-custom.yml), and `scripts/setup.sh` already copies it into place.
+
+> [!NOTE]
+> Prowlarr caches the definitions. **Every time you edit a `.yml`, restart Prowlarr** or it will keep using the old version.
+
+### 5.4 · Add private trackers
+
+Private trackers need an account, usually by invitation. In return, they tend to offer better quality, more speed and better-organized content.
+
+1. **Indexers → Add Indexer** → filter by **Privacy: Private** and look for your tracker.
+2. Fill in whatever it asks for. It depends on the tracker:
+
+   | What it asks for | Where to find it |
+   |---|---|
+   | **API key** (indexers ending in *(API)*) | In your tracker profile, under *Security*, *API* or *Settings* |
+   | **Username and password** | The ones from your account |
+   | **Cookie** | In the browser, while logged in: *F12 → Application/Storage → Cookies* |
+   | **Passkey / RSS key** | In your profile, usually next to the RSS links |
+
+3. Click **Test** and then **Save**.
+
+**Follow the ratio rules** or you'll get kicked out. Almost all of them require you to seed each torrent for a minimum time or until you reach a ratio:
+- In each indexer's settings in Prowlarr, fill in **Seed Ratio** and **Seed Time** with your tracker's minimum. Prowlarr passes them on to Sonarr, Radarr and Chaptarr.
+- Don't delete torrents from qBittorrent before that minimum is met.
+- In Sonarr and Radarr, leave **Remove Completed** disabled in the download client if your tracker demands long seeding times.
+
+> [!CAUTION]
+> Your API key, passkey and cookies are like your password. **Don't share or publish them** (not in screenshots, issues or repos). If they leak, regenerate them from your tracker profile.
+
+### 5.5 · Priority, categories and profiles
+
+- **Priority** (1–50): the **lower** the number, the higher the preference. Give your private trackers a low number (e.g. `10`) and the public ones a higher one (e.g. `25`–`40`), so they're only used as a fallback.
+- **Categories:** they decide which app each indexer reaches. *Movies* goes to Radarr, *TV* to Sonarr, and *Books/Audio* to Chaptarr. If an indexer doesn't show up in an app, check its categories.
+- **Sync Profile:** with *Standard* the indexer is used for everything (RSS, automatic and manual search). If one gives you too many bad results, create a manual-search-only profile under *Settings → Apps → Sync Profiles*.
+- **Tags:** if you want an indexer to reach only one app, give it a tag and set the same tag on that app, under *Settings → Apps*.
+
+### 5.6 · Sites behind Cloudflare: FlareSolverr (optional)
+
+Some public sites have a Cloudflare protection that Prowlarr can't get past on its own, and you'll see errors like *"blocked by CloudFlare Protection"*. That's what **FlareSolverr** is for. Add it to the `docker-compose.yml`:
+
+```yaml
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      TZ: ${TZ}
+    restart: unless-stopped
+```
+
+Start it with `docker compose up -d` and then:
+1. **Settings → Indexers → + → FlareSolverr** · Host: `http://flaresolverr:8191` · Tags: `flaresolverr`.
+2. Edit the indexer that was failing and give it the `flaresolverr` tag.
+
+### 5.7 · Test it and connect the apps
+
+- **Search** (left menu): look up a title to check that your indexers respond.
+- **Settings → Apps:** this is where you'll connect Sonarr, Radarr and Chaptarr in the next steps, so they receive the indexers automatically.
 
 > [!TIP]
 > Inside Docker, the apps see each other **by container name** (`sonarr`, `radarr`, `qbittorrent`…). Don't use `localhost` or the server's IP to connect them to each other.

@@ -209,10 +209,94 @@ Abre `http://IP-DEL-SERVIDOR:8085`.
 
 Abre `http://IP-DEL-SERVIDOR:9696` y crea tu usuario.
 
-1. **Indexers → Add Indexer:** añade los indexadores que quieras usar. Para los privados necesitarás tu cuenta o tu API key. Elige con cabeza: tú eres el responsable de lo que descargas.
-2. **Settings → Download Clients → + → qBittorrent:**
-   - Host: `qbittorrent` · Port: `8085` · usuario y contraseña de qBittorrent.
-3. **Settings → Apps:** aquí conectarás Sonarr, Radarr y Chaptarr (en los pasos siguientes) para que reciban los indexadores automáticamente.
+Prowlarr es la **agenda de indexadores**: los añades aquí una sola vez y él se los pasa a Sonarr, Radarr y Chaptarr. Un indexador es una web o un tracker donde se buscan los torrents.
+
+> [!IMPORTANT]
+> Este repo no trae indexadores configurados ni recomienda ninguno. Tú decides cuáles usar y eres responsable de lo que descargas. Respeta las leyes de tu país y las normas de cada sitio.
+
+### 5.1 · Conectar qBittorrent
+
+**Settings → Download Clients → + → qBittorrent:**
+- Host: `qbittorrent` · Port: `8085` · usuario y contraseña de qBittorrent.
+
+### 5.2 · Añadir indexadores públicos
+
+Los públicos no necesitan cuenta.
+
+1. **Indexers → Add Indexer.**
+2. Filtra por **Privacy: Public**, **Protocol: torrent** y el **idioma** que te interese.
+3. Elige uno, revisa las categorías y pulsa **Test** y luego **Save**.
+
+**Ejemplo: Internet Archive (archive.org).** Es una biblioteca digital sin ánimo de lucro, con miles de libros, audiolibros, películas clásicas y música de **dominio público o con licencia libre**. Búscalo como *Internet Archive* en *Add Indexer*.
+
+> [!TIP]
+> Si el Internet Archive oficial te da error 403 al probarlo, usa la versión **Internet Archive (custom)** que trae este repo (ver 5.3). Es la misma, pero se identifica como un navegador normal y archive.org no la bloquea.
+
+### 5.3 · Indexadores propios (definiciones *custom*)
+
+Prowlarr permite añadir indexadores que no vienen de serie, o arreglar uno que falla, con un archivo YAML (formato *Cardigann*).
+
+1. Copia el `.yml` en `CONFIG_ROOT/prowlarr/Definitions/Custom/`.
+2. Reinicia Prowlarr: `docker restart prowlarr`.
+3. En **Add Indexer** aparecerá con el nombre que ponga el archivo, normalmente con *(custom)* al final.
+
+Este repo trae [`prowlarr/Custom/internetarchive-custom.yml`](prowlarr/Custom/internetarchive-custom.yml), y `scripts/setup.sh` ya lo copia en su sitio.
+
+> [!NOTE]
+> Prowlarr guarda las definiciones en caché. **Cada vez que edites un `.yml`, reinicia Prowlarr** o seguirá usando la versión anterior.
+
+### 5.4 · Añadir trackers privados
+
+Los trackers privados necesitan cuenta, normalmente por invitación. A cambio, suelen tener mejor calidad, más velocidad y contenido mejor organizado.
+
+1. **Indexers → Add Indexer** → filtra por **Privacy: Private** y busca tu tracker.
+2. Rellena lo que pida. Depende del tracker:
+
+   | Lo que pide | Dónde lo encuentras |
+   |---|---|
+   | **API key** (indexadores que acaban en *(API)*) | En tu perfil del tracker, en *Seguridad*, *API* o *Ajustes* |
+   | **Usuario y contraseña** | Los de tu cuenta |
+   | **Cookie** | En el navegador, con la sesión iniciada: *F12 → Aplicación/Almacenamiento → Cookies* |
+   | **Passkey / RSS key** | En tu perfil, normalmente junto a los enlaces RSS |
+
+3. Pulsa **Test** y luego **Save**.
+
+**Cumple las normas de ratio** o te echarán. Casi todos piden compartir cada torrent un tiempo mínimo o hasta llegar a un ratio:
+- En la configuración de cada indexador de Prowlarr rellena **Seed Ratio** y **Seed Time** con el mínimo de tu tracker. Prowlarr los pasa a Sonarr, Radarr y Chaptarr.
+- No borres torrents de qBittorrent antes de cumplir ese mínimo.
+- En Sonarr y Radarr deja desactivado **Remove Completed** en el cliente de descargas si tu tracker exige compartir mucho tiempo.
+
+> [!CAUTION]
+> Tu API key, tu passkey y tus cookies son como tu contraseña. **No las compartas ni las publiques** (ni en capturas, ni en issues, ni en repos). Si se filtran, regenéralas desde tu perfil del tracker.
+
+### 5.5 · Prioridad, categorías y perfiles
+
+- **Priority** (1–50): cuanto **más bajo**, más preferencia. Pon tus trackers privados con un número bajo (p. ej. `10`) y los públicos más alto (p. ej. `25`–`40`), para que se usen solo como reserva.
+- **Categorías:** deciden a qué app llega cada indexador. *Movies* va a Radarr, *TV* a Sonarr, y *Books/Audio* a Chaptarr. Si un indexador no aparece en una app, revisa sus categorías.
+- **Sync Profile:** con *Standard* el indexador se usa para todo (RSS, búsqueda automática y manual). Si uno te da demasiados resultados malos, crea en *Settings → Apps → Sync Profiles* un perfil solo para búsqueda manual.
+- **Tags:** si quieres que un indexador llegue solo a una app, ponle una etiqueta y pon la misma en esa app, dentro de *Settings → Apps*.
+
+### 5.6 · Webs con Cloudflare: FlareSolverr (opcional)
+
+Algunas webs públicas tienen una protección de Cloudflare que Prowlarr no puede pasar solo, y verás errores como *"blocked by CloudFlare Protection"*. Para eso está **FlareSolverr**. Añádelo al `docker-compose.yml`:
+
+```yaml
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      TZ: ${TZ}
+    restart: unless-stopped
+```
+
+Arráncalo con `docker compose up -d` y luego:
+1. **Settings → Indexers → + → FlareSolverr** · Host: `http://flaresolverr:8191` · Tags: `flaresolverr`.
+2. Edita el indexador que fallaba y ponle el tag `flaresolverr`.
+
+### 5.7 · Probar y conectar las apps
+
+- **Search** (menú izquierdo): busca un título para comprobar que tus indexadores responden.
+- **Settings → Apps:** aquí conectarás Sonarr, Radarr y Chaptarr en los pasos siguientes, para que reciban los indexadores automáticamente.
 
 > [!TIP]
 > Dentro de Docker, las apps se ven entre sí **por su nombre de contenedor** (`sonarr`, `radarr`, `qbittorrent`…). No uses `localhost` ni la IP del servidor para conectar unas con otras.
