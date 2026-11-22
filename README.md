@@ -2,7 +2,7 @@
 
 # 🎬 Jellyfin + *arr Stack
 
-**Tu propio Netflix en casa: series, películas, libros y audiolibros, todo automático y con un solo `docker compose up`.**
+**Tu centro multimedia en casa: series, películas, libros y audiolibros, todo automático y con un solo `docker compose up`.**
 
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![Jellyfin](https://img.shields.io/badge/Jellyfin-media%20server-00A4DC?logo=jellyfin&logoColor=white)
@@ -18,9 +18,9 @@
 
 ## 🤔 ¿Para qué sirve esto?
 
-Imagina tener **tu propio Netflix**, pero en tu casa, sin cuotas y con todo lo que quieras ver.
+Imagina tener **tu propio centro multimedia** en casa: como Netflix, Audible y Kindle juntos, pero sin cuotas y con todo lo que quieras ver, leer o escuchar.
 
-Eso es este stack: un conjunto de aplicaciones que trabajan juntas para que tú solo tengas que **elegir qué quieres ver**. Del resto se encargan ellas:
+Eso es este stack: un conjunto de aplicaciones que trabajan juntas para que tú solo tengas que **elegir qué quieres ver, leer o escuchar**. Del resto se encargan ellas:
 
 - 🔎 **Buscan** lo que pides.
 - ⬇️ **Lo descargan** y te avisan.
