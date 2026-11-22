@@ -166,6 +166,16 @@ docker compose ps
 
 Tous les services devraient apparaître comme `running` (Seerr et chaptarr-db comme `healthy`).
 
+Tous les conteneurs sont créés dans **un seul projet nommé `jellyfin-arr-stack`** : tu les verras regroupés dans Portainer, dans Container Manager ou avec `docker compose ls`.
+
+> [!TIP]
+> **Tu préfères passer par l'interface de Synology ?** Lance d'abord `./scripts/setup.sh` en SSH, puis va dans **Container Manager → Projet → Créer** :
+> 1. Nom du projet : `jellyfin-arr-stack`.
+> 2. Chemin : le dossier où tu as cloné le dépôt (celui qui contient `docker-compose.yml` et `.env`).
+> 3. Source : *Utiliser le docker-compose.yml existant* → **Suivant** → **Terminé**.
+>
+> De là, tu pourras démarrer, arrêter, mettre à jour et consulter les logs de tout le stack en un clic.
+
 > [!NOTE]
 > À partir d'ici, remplace `IP-DEL-SERVIDOR` par l'IP de ta machine, par exemple `192.168.1.10`.
 

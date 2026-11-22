@@ -7,6 +7,10 @@
 # Al compartir la misma carpeta /data, las apps pueden usar hardlinks:
 # un archivo descargado y su copia en la biblioteca ocupan el espacio una sola vez.
 
+# Nombre del proyecto: todos los contenedores aparecen agrupados bajo él
+# (en Portainer, en Container Manager de Synology y en "docker compose ls").
+name: jellyfin-arr-stack
+
 x-common-env: &common-env
   PUID: ${PUID}
   PGID: ${PGID}
