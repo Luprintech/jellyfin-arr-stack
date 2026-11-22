@@ -10,7 +10,7 @@
 
 🌍 **Idioma / Language**
 
-[🇪🇸 Español](README.md) · [🇬🇧 English](README.en.md) · [🇫🇷 Français](README.fr.md) · **🇮🇹 Italiano** · [🇵🇹 Português](README.pt.md) · [🇩🇪 Deutsch](README.de.md)
+[<img src="https://flagcdn.com/24x18/es.png" width="24" height="18" alt="ES"> Español](README.md) · [<img src="https://flagcdn.com/24x18/gb.png" width="24" height="18" alt="GB"> English](README.en.md) · [<img src="https://flagcdn.com/24x18/fr.png" width="24" height="18" alt="FR"> Français](README.fr.md) · **<img src="https://flagcdn.com/24x18/it.png" width="24" height="18" alt="IT"> Italiano** · [<img src="https://flagcdn.com/24x18/pt.png" width="24" height="18" alt="PT"> Português](README.pt.md) · [<img src="https://flagcdn.com/24x18/de.png" width="24" height="18" alt="DE"> Deutsch](README.de.md)
 
 </div>
 
